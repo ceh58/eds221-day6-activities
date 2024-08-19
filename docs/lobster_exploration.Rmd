@@ -1,0 +1,109 @@
+---
+title: "Lobster Exploration"
+author: "Carmen"
+date: "2024-08-19"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup, include=FALSE, message=FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+## Task 2.
+
+```{r, message=FALSE, warning = FALSE}
+lobster_abundance <- read_csv(here("data", "Lobster_Abundance_All_Years_20210412.csv"), na = "-99999") %>%
+  clean_names() %>%
+  uncount(count) #removes column "count" and adds rows for individual counts (reverse of count)
+```
+
+```{r, message=FALSE, warning = FALSE}
+summary_lobster <- lobster_abundance %>%
+  select(year, site, size_mm) %>%
+  group_by(year, site) %>%
+  summarize(mean_carapace = mean(size_mm, na.rm = TRUE),
+            total_counts = n())
+
+ggplot(summary_lobster, aes(x = year, y = total_counts, color = site))+
+  geom_point(size = 5)+
+  labs(x = "Year",
+       y = "Total Counts",
+       title = "Total counts over time by site")
+```
+
+## Visualize legal and illegal lobster catch for 2020. 
+
+```{r, message=FALSE, warning = FALSE}
+lobster20 <- lobster_abundance %>%
+  select(year, site, size_mm) %>%
+  filter(year == 2020) %>%
+  mutate(legal = case_when(size_mm >= 79.76 ~ "Legal",
+                           size_mm < 79.76 ~ "Illegal"
+  )) %>%
+  group_by(site, legal) %>%
+  summarize(counts = n())
+
+ggplot(lobster20, aes(x = site, y = counts, fill = legal)) +
+  geom_col(position = "fill") +
+  labs(x = "Site",
+       y = "Counts",
+       title = "Lobster Counts by Site")+
+  theme(legend.title=element_blank())+
+  theme_minimal()
+```
+
+#### IVEE and NAPL has the largest proportion of legal lobsters, and these sites are also MPAs. 
+
+## Task 3.
+
+```{r, message=FALSE, warning = FALSE}
+#----filter()----
+ex_a <- lobster_abundance %>%
+  filter(site == c("IVEE", "CARP", "NAPL"))
+
+ex_b <- lobster_abundance %>%
+  filter(month == 8)
+
+ex_c <- lobster_abundance %>%
+  filter(site == "AQUE", size_mm > 70)
+
+ex_d <- lobster_abundance %>%
+  filter(site != "NAPL")
+
+#----group_by()----
+ex_e <- lobster_abundance %>%
+  group_by(site) %>%
+  summarize(mean_size = mean(size_mm, na.rm = TRUE), stdev_size = sd(size_mm, na.rm = TRUE))
+
+ex_f <- lobster_abundance %>%
+  group_by(site, month) %>%
+  summarize(max_size = max(size_mm, na.rm = TRUE))
+
+#----mutate()----
+ex_g <- lobster_abundance %>%
+  mutate(size_cm = size_mm * 10)
+
+ex_h <- lobster_abundance %>%
+  mutate(across(site, tolower))
+
+ex_i <- lobster_abundance %>%
+  mutate(across(area, as.character))
+
+#----case_when()----
+ex_j <- lobster_abundance %>%
+  mutate(size_bin = case_when(size_mm <= 70 ~ "small",
+                              size_mm > 70 ~ "large"))
+                              
+ex_k <- lobster_abundance %>%
+  mutate(designation = case_when(site %in% c("IVEE", "NAPL") ~ "MPA",
+                                 TRUE ~ "not MPA"))
+```
+
