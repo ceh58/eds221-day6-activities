@@ -425,7 +425,7 @@ ex_f &lt;- lobster_abundance %&gt;%
 
 #----mutate()----
 ex_g &lt;- lobster_abundance %&gt;%
-  mutate(size_cm = size_mm * 10)
+  mutate(size_cm = size_mm / 10)
 
 ex_h &lt;- lobster_abundance %&gt;%
   mutate(across(site, tolower))

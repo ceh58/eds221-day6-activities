@@ -89,7 +89,7 @@ ex_f <- lobster_abundance %>%
 
 #----mutate()----
 ex_g <- lobster_abundance %>%
-  mutate(size_cm = size_mm * 10)
+  mutate(size_cm = size_mm / 10)
 
 ex_h <- lobster_abundance %>%
   mutate(across(site, tolower))
